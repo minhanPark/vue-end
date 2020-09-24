@@ -1,6 +1,6 @@
 <template>
   <div class="contents">
-    <h1 class="page-header">Create post</h1>
+    <h1 class="page-header">Edit post</h1>
     <div class="form-wrapper">
       <form class="form" @submit.prevent="submitForm">
         <div>
@@ -10,20 +10,20 @@
         <div>
           <label for="contents">Contents:</label>
           <textarea id="contents" type="text" rows="5" v-model="contents" />
-          <p
-            v-if="!isContentsValid"
-            class="validation-text warning"
-          >Contents length must be less than 200.</p>
+          <p v-if="!isContentsValid" class="validation-text warning">
+            Contents length must be less than 200.
+          </p>
         </div>
-        <button type="submit" class="btn">Create</button>
+        <button type="submit" class="btn">Edit</button>
       </form>
-      <p class="log">{{logMessage}}</p>
+      <p class="log">{{ logMessage }}</p>
     </div>
   </div>
 </template>
 
 <script>
-import { createPost } from "../../api/posts";
+import { fetchPost, editPost } from "../../api/posts";
+
 export default {
   data() {
     return {
@@ -39,23 +39,30 @@ export default {
   },
   methods: {
     async submitForm() {
+      const id = this.$route.params.id;
       try {
-        const response = await createPost({
+        await editPost(id, {
           title: this.title,
           contents: this.contents
         });
-        console.log(response);
+        // TODO remember: push할때는 router, 주소값 가져 올때는 route임
         this.$router.push("/main");
       } catch (error) {
-        console.log(error.response.data.message);
-        this.logMessage = error.response.data.message;
+        console.log(error);
+        this.logMessage = error;
       }
     }
+  },
+  async created() {
+    const id = this.$route.params.id;
+    const { data } = await fetchPost(id);
+    this.title = data.title;
+    this.contents = data.contents;
   }
 };
 </script>
 
-<style scoped>
+<style>
 .form-wrapper .form {
   width: 100%;
 }
